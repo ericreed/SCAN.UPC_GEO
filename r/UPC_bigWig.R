@@ -10,14 +10,20 @@ BWdir<-file.path(baseDir, GSM)
 BWfile<-list.files(BWdir, pattern=".bw", full.names = TRUE)[1]
 
 
-UPC_bigWig<-function(BWfile, binWidth=160, overlap = 40){
+#Function to run UPC on BigWig files
+UPC_bigWig<-function(BWfile, binWidth=150, overlap = 25){
   
   bw<-import.bw(BWfile)
   
-  #Check that the genome is binned the same throughout
-  bin<-unique(bw@ranges@width)
-  if(length(bin)>1) stop(paste("Different bin widths.", sep=""))
-  print(paste("bigWig file is binned to ", bin, " bp.", sep=""))
+  
+  #Get coordinates
+  startCoord <- bw@ranges@start
+  
+  #Get consensus bin sizes
+  bin<-startCoord[2:length(startCoord)]-startCoord[1:(length(startCoord)-1)]
+  bin<-table(sample(bin, 1000))
+  bin<-as.numeric(names(which.max(bin)))
+  print(paste("bigWig file binned to ", bin, " bp.", sep=""))
   
   #Find number of adjacent bins to combine
   binCount<-ceiling(binWidth/bin)
@@ -40,9 +46,8 @@ UPC_bigWig<-function(BWfile, binWidth=160, overlap = 40){
   for(i in 1:length(Chrs)){
     chrVec<-c(chrVec, rep(Chrs[i], Length[i]))}
   
-  #Get coordinates and bin means
-  startCoord = bw@ranges@start[1:(length(bw@ranges@start)-(binCount-1))]
-  endCoord = bw@ranges@start[(binCount):length(bw@ranges@start)]+(bin-1)
+  endCoord <- startCoord[(binCount):length(startCoord)]+(bin-1)
+  startCoord<-startCoord[1:(length(startCoord)-(binCount-1))]
   binMeans<-runmean(bw@elementMetadata@listData$score, k=binCount, alg="fast", endrule = "trim")
   
   #Remove GIANT bigWig object

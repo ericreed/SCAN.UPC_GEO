@@ -13,18 +13,22 @@ BWfile<-list.files(BWdir, pattern=".bw", full.names = TRUE)[1]
 
 #Alternate function to run UPC on BigWig files.  This will bin all data file from the same genome build the same.
 UPC_bigWig_NO<-function(BWfile, 
-                     binWidth = 150, 
-                     build = "hg19", 
-                     chrs = NULL){
+                        binWidth = 150, 
+                        build = "hg19", 
+                        chrs = NULL){
   
   #Tile the genome for specified width
-  bins <- tileGenome(Seqinfo(genome=build), tilewidth=binWidth,
+  if(is.character(build)) Seq = Seqinfo(genome=build) else Seq = build
+  
+  bins <- tileGenome(Seq, tilewidth=binWidth,
                      cut.last.tile.in.chrom=TRUE)
+  bins <- keepSeqlevels(bins, chrs)
   
   #Read in BigWig file as RleList
   bw <- import.bw(BWfile, as = "RleList")
   
   #Order the RleList to match the tiled genome (bins)
+  bw <- bw[names(bw) %in% seqlevels(bins)]
   bw <- bw[order(match(names(bw), seqlevels(bins)))]
   
   #Find average signal in each bin

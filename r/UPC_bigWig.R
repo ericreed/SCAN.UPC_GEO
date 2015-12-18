@@ -1,11 +1,10 @@
-#Function to read in and create .bw files
 require(SCAN.UPC)
 require(rtracklayer)
 require(caTools)
 
 #Set base directly to read and write files
 baseDir<-getwd()
-GSM<-"GSM409307"
+GSM<-"GSM806935"
 BWdir<-file.path(baseDir, GSM)
 BWfile<-list.files(BWdir, pattern=".bw", full.names = TRUE)[1]
 

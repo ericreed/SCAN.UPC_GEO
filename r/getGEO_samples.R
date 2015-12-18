@@ -6,9 +6,9 @@ require(tools)
 #Set base directly to read and write files
 baseDir<-getwd()
 
-GSM<-"GSM409307"
+GSM<-"GSM772735"
 
-geo2bw<-function(GSM, baseDir){
+geo2bw<-function(GSM, baseDir, Seq = NULL){
   #Create temporary directory
   tempDir<-file.path(baseDir, "GEOtemp")
   dir.create(tempDir)
@@ -59,16 +59,16 @@ geo2bw<-function(GSM, baseDir){
           flag<-FALSE}}}}
     
     #Set Seq to the correct  build.  Otherwise you can't write the bigWig file. 
-    Seq<-NULL
-    if(grepl("hg19", build)){
-      build<-"hg19"
-      Seq<-Seqinfo(genome=build)}
-    if(grepl("hg18", build)){
-      build<-"hg18"
-      Seq<-Seqinfo(genome=build)}
-    if(grepl("hg38", build)){
-      build<-"hg38"
-      Seq<-Seqinfo(genome=build)}
+    if(is.null(Seq)){
+      if(grepl("hg19", build)){
+        build<-"hg19"
+        Seq<-Seqinfo(genome=build)}
+      if(grepl("hg18", build)){
+        build<-"hg18"
+        Seq<-Seqinfo(genome=build)}
+      if(grepl("hg38", build)){
+        build<-"hg38"
+        Seq<-Seqinfo(genome=build)}}
     
     if(!is.null(Seq)){
     wigToBigWig(file.path(newDir, i), seqinfo = Seq, dest = paste(file_path_sans_ext(file.path(newDir, i), TRUE),"_", build, ".bw", sep=""))} else {

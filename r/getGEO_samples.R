@@ -8,7 +8,7 @@ baseDir<-getwd()
 
 GSM<-"GSM772735"
 
-geo2bw<-function(GSM, baseDir, Seq = NULL){
+geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){
   #Create temporary directory
   tempDir<-file.path(baseDir, "GEOtemp")
   dir.create(tempDir)

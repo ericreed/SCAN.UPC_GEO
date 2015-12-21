@@ -81,6 +81,6 @@ UPC_bigWig_annot<-function(BWfile,
 }
 
 start<-Sys.time()
-UPCout<-UPC_bigWig_annot(BWfile, annot, max=TRUE)
+UPCout<-UPC_bigWig_annot(BWfile, annot, max=FALSE)
 end<-Sys.time()
 end-start

@@ -1,6 +1,7 @@
 require(SCAN.UPC)
 require(rtracklayer)
 require(caTools)
+require(tools)
 
 #Function to read in and create .bw files
 geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){

@@ -33,28 +33,28 @@ geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){
   
   for(i in wigFiles){
     
-    #Get Assembly information from .soft file
-    build<-"empty"
-    soft<-readLines(file.path(newDir, paste(GSM, ".soft", sep="")))
-    iSub<-sub(".gz", "", i)
-    end<-FALSE
-    for(j in 1:length(soft)){
-      line<-soft[j]
-      if(grepl(iSub, line) & end==FALSE){
-        flag<-TRUE
-        q<-j+1
-        while(flag==TRUE & q<length(soft)){
-          q<-q+1
-          lineSub<-soft[q]
-          if(grepl("GENOME_ASSEMBLY", lineSub)){
-            build<-lineSub
-            flag<-FALSE
-            end<-TRUE}
-          if(grepl("[*******]", lineSub)){
-            flag<-FALSE}}}}
-    
-    #Set Seq to the correct  build.  Otherwise you can't write the bigWig file. 
     if(is.null(Seq)){
+      #Get Assembly information from .soft file
+      build<-"empty"
+      soft<-readLines(file.path(newDir, paste(GSM, ".soft", sep="")))
+      iSub<-sub(".gz", "", i)
+      end<-FALSE
+      for(j in 1:length(soft)){
+        line<-soft[j]
+        if(grepl(iSub, line) & end==FALSE){
+          flag<-TRUE
+          q<-j+1
+          while(flag==TRUE & q<length(soft)){
+            q<-q+1
+            lineSub<-soft[q]
+            if(grepl("GENOME_ASSEMBLY", lineSub)){
+              build<-lineSub
+              flag<-FALSE
+              end<-TRUE}
+            if(grepl("[*******]", lineSub)){
+              flag<-FALSE}}}}
+      
+      #Set Seq to the correct  build.  Otherwise you can't write the bigWig file. 
       if(grepl("hg19", build)){
         build<-"hg19"
         Seq<-Seqinfo(genome=build)}

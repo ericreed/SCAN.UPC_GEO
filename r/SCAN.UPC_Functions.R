@@ -4,9 +4,9 @@ require(caTools)
 require(tools)
 
 #Function to read in and create .bw files
-geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){
+geo2bw<-function(GSM, baseDir, SeqList = NULL){
   #Create temporary directory
-  tempDir<-file.path(baseDir, "GEOtemp")
+  tempDir<-file.path(baseDir, paste("GEOtemp", GSM, sep="_"))
   dir.create(tempDir)
   
   #Download all data files from GEO for this experiment
@@ -34,28 +34,30 @@ geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){
   
   for(i in wigFiles){
     
-    if(is.null(Seq)){
-      #Get Assembly information from .soft file
-      build<-"empty"
-      soft<-readLines(file.path(newDir, paste(GSM, ".soft", sep="")))
-      iSub<-sub(".gz", "", i)
-      end<-FALSE
-      for(j in 1:length(soft)){
-        line<-soft[j]
-        if(grepl(iSub, line) & end==FALSE){
-          flag<-TRUE
-          q<-j+1
-          while(flag==TRUE & q<length(soft)){
-            q<-q+1
-            lineSub<-soft[q]
-            if(grepl("GENOME_ASSEMBLY", lineSub)){
-              build<-lineSub
-              flag<-FALSE
-              end<-TRUE}
-            if(grepl("[*******]", lineSub)){
-              flag<-FALSE}}}}
-      
-      #Set Seq to the correct  build.  Otherwise you can't write the bigWig file. 
+    #Get Assembly information from .soft file
+    build<-"empty"
+    soft<-readLines(file.path(newDir, paste(GSM, ".soft", sep="")))
+    iSub<-sub(".gz", "", i)
+    end<-FALSE
+    for(j in 1:length(soft)){
+      line<-soft[j]
+      if(grepl(iSub, line) & end==FALSE){
+        flag<-TRUE
+        q<-j+1
+        while(flag==TRUE & q<length(soft)){
+          q<-q+1
+          lineSub<-soft[q]
+          if(grepl("GENOME_ASSEMBLY", lineSub)){
+            build<-lineSub
+            flag<-FALSE
+            end<-TRUE}
+          if(grepl("[*******]", lineSub)){
+            flag<-FALSE}}}}
+    
+    #Set Seq to the correct  build.  Otherwise you can't write the bigWig file.
+    Seq<-NULL
+    
+    if(is.null(SeqList)){
       if(grepl("hg19", build)){
         build<-"hg19"
         Seq<-Seqinfo(genome=build)}
@@ -64,7 +66,17 @@ geo2bw<-function(GSM, baseDir, Seq = NULL, build = NULL){
         Seq<-Seqinfo(genome=build)}
       if(grepl("hg38", build)){
         build<-"hg38"
-        Seq<-Seqinfo(genome=build)}}
+        Seq<-Seqinfo(genome=build)}} else {
+          if(grepl("hg19", build)){
+            build<-"hg19"
+            Seq<-SeqList$Seq19}
+          if(grepl("hg18", build)){
+            build<-"hg18"
+            Seq<-SeqList$Seq18}
+          if(grepl("hg38", build)){
+            build<-"hg38"
+            Seq<-SeqList$Seq38}}
+    
     
     if(!is.null(Seq)){
       wigToBigWig(file.path(newDir, i), seqinfo = Seq, dest = paste(file_path_sans_ext(file.path(newDir, i), TRUE),"_", build, ".bw", sep=""))} else {
@@ -175,7 +187,7 @@ UPC_bigWig_NO<-function(BWfile,
 
 #Alternate function to run UPC on BigWig files.  This requires an annotation file in GRanges format.
 UPC_bigWig_annot<-function(BWfile,
-                           annot, 
+                           annot,
                            chrs = NULL,
                            max = FALSE){
   
@@ -184,6 +196,8 @@ UPC_bigWig_annot<-function(BWfile,
   
   #Order the RleList to match the tiled genome (bins)
   bw <- bw[names(bw) %in% seqlevels(annot)]
+  annot<-keepSeqlevels(annot, names(bw))
+  
   bw <- bw[order(match(names(bw), seqlevels(annot)))]
   
   #function (bins, numvar, varname) 
